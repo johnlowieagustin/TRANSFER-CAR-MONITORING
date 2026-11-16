@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TPD Corrugated Board Inventory Monitoring</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef2f8;--card:#fff;--ink:#1a233a;--mut:#6a7189;--line:#dde3ee;--brand:#2f86d4;--brand2:#40a2ed;--head:#f2f5fa;
+--s0:#8097b1;--s1:#ff2829;--s2:#fad050;--s3:#33ac2e;--in:#1a9a9a;--out:#e0201f;--warn:#fff4d6;--warnink:#6b4a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1a233a;--card:#272e48;--ink:#eceef5;--mut:#a4a7b2;--line:#3a4160;--brand:#2f86d4;--brand2:#40a2ed;--head:#20304c;--s0:#8097b1;--s1:#ff2829;--s2:#fad050;--s3:#33ac2e;--in:#25b5b5;--out:#ff5859;--warn:#3b3622;--warnink:#fad050}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1a233a;--card:#272e48;--ink:#eceef5;--mut:#a4a7b2;--line:#3a4160;--brand:#2f86d4;--brand2:#40a2ed;--head:#20304c;--s0:#8097b1;--s1:#ff2829;--s2:#fad050;--s3:#33ac2e;--in:#25b5b5;--out:#ff5859;--warn:#3b3622;--warnink:#fad050}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{background:none;color:var(--ink);padding:14px 20px 4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:1500px;margin:0 auto}
+.logo{height:46px;width:auto;background:#fff;border-radius:10px;padding:5px 10px;flex:none}
+header h1{margin:0;font-size:22px;letter-spacing:.2px;font-weight:700}
+header p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+header .sp{flex:1}
+button,select,input{font:inherit;color:inherit}
+.btn{background:transparent;border:1px solid var(--brand2);color:var(--brand2);padding:5px 14px;border-radius:16px;font-size:12px;cursor:pointer}
+.btn:hover{background:color-mix(in srgb,var(--brand2) 18%,transparent)}
+.btn.pri{background:var(--brand2);color:#fff}
+.btn:focus-visible,.chip:focus-visible,.seg button:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:4px 12px;font-size:12px;color:var(--mut);max-width:100%}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--s0);flex:none}
+.pill[data-s="ok"] .dot{background:var(--s3);box-shadow:0 0 0 3px color-mix(in srgb,var(--s3) 25%,transparent)}
+.pill[data-s="busy"] .dot{background:var(--s2);animation:pu 1s infinite}
+.pill[data-s="err"] .dot{background:var(--s1)}
+@keyframes pu{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.pill[data-s="busy"] .dot{animation:none}}
+main{padding:14px 20px 28px;max-width:1500px;margin:0 auto}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--s2);border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:13px}
+.banner.err{border-left-color:var(--s1)}
+.banner .sp{flex:1}
+.alert{background:var(--warn);color:var(--warnink);border:1px solid color-mix(in srgb,var(--s2) 50%,transparent);border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12.5px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.f{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0}
+.f label{display:block;font-size:11.5px;color:var(--mut)}
+.f select,.f input{width:100%;border:0;background:transparent;padding:3px 0;outline:0;cursor:pointer;min-width:0;text-overflow:ellipsis}
+.f input{cursor:text}
+.f select option{color:var(--ink);background:var(--card)}
+.f:focus-within{border-color:var(--brand2);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand2) 35%,transparent)}
+.slic{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin-bottom:10px}
+.sg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sg>b{font-size:11.5px;color:var(--mut);font-weight:600;margin-right:2px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:3px 12px;font-size:12px;cursor:pointer}
+.chip:hover{border-color:var(--brand2)}
+.chip.on{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.act{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;min-height:0}
+.act .chip{display:inline-flex;gap:6px;align-items:center;background:color-mix(in srgb,var(--brand2) 14%,var(--card))}
+.act .chip i{font-style:normal;opacity:.7}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:12px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;border-left:5px solid var(--line);display:flex;align-items:center;gap:12px;min-width:0}
+.k.c0{--ac:var(--s0)}.k.c1{--ac:var(--s1)}.k.c2{--ac:var(--s2)}.k.c3{--ac:var(--s3)}
+.ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--ac,var(--brand2)) 16%,transparent);color:var(--ac,var(--brand2))}.ic svg{width:22px;height:22px}
+.k.st{grid-column:span 2;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 10px;align-items:center}
+.sc{text-align:center;line-height:1.15;cursor:pointer;border-radius:8px;padding:2px;background:none;border:0}.sc:hover{background:color-mix(in srgb,var(--ac) 12%,transparent)}.sc.on{background:color-mix(in srgb,var(--ac) 20%,transparent);outline:1px solid var(--ac)}
+.sc svg{width:18px;height:18px;color:var(--ac)}.k .sc b{display:block;font-size:22px}.sc span{font-size:11px;color:var(--mut)}.sc.c0{--ac:var(--s0)}.sc.c1{--ac:var(--s1)}.sc.c2{--ac:var(--s2)}.sc.c3{--ac:var(--s3)}
+.k b{display:block;font-size:26px;line-height:1.15}
+.k span{font-size:12px;color:var(--mut)}
+.k.big{border-left-color:var(--brand2)}.k.big b{font-size:30px}
+.k.c0{border-left-color:var(--s0)}.k.c1{border-left-color:var(--s1)}.k.c2{border-left-color:var(--s2)}.k.c3{border-left-color:var(--s3)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+.card h2{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sp{flex:1}
+.card h2 small{font-size:12px;font-weight:400;color:var(--mut)}
+.a4{grid-column:span 4}.a8{grid-column:span 8}.a5{grid-column:span 5}.a6{grid-column:span 6}.a7{grid-column:span 7}.a12{grid-column:span 12}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--ink);font-size:11px}
+svg.big text{font-size:14px}
+svg.big text.sub{font-size:12px!important}
+.mut{fill:var(--mut)!important;color:var(--mut)}
+#donut svg{max-width:380px;margin:0 auto}
+.clk{cursor:pointer}
+tr.clk:hover td{background:color-mix(in srgb,var(--brand2) 10%,transparent)}
+rect.clk:hover,circle.clk:hover{opacity:.82}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:none;border:0;padding:3px 10px;cursor:pointer;font-size:12px}
+.seg button.on{background:var(--brand2);color:#fff}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--mut);margin-top:4px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.tw{overflow-x:auto;max-height:380px;overflow-y:auto}
+#skutbl{max-height:640px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--head);text-align:right;font-weight:600;padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
+td{padding:5px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+td.wrap{white-space:normal;min-width:160px}
+th.l,td.l,th:first-child,td:first-child{text-align:left}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;color:#fff}
+.b0{background:var(--s0)}.b1{background:var(--s1)}.b2{background:var(--s2);color:#1d1d1d}.b3{background:var(--s3)}
+.in{color:var(--in);font-weight:600}.out{color:var(--out);font-weight:600}
+.neg{color:var(--s1);font-weight:700}
+.empty{padding:26px;text-align:center;color:var(--mut)}
+#msg{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:8px;display:none;z-index:30;max-width:90%}
+.dl{display:block;margin-top:6px;font-size:13px}.dlab{display:none}.foot{margin-top:14px;font-size:11.5px;color:var(--mut);border-top:1px solid var(--line);padding-top:8px}.dl div{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}.dl i{width:12px;height:12px;border-radius:3px;flex:none}.dl span{margin-left:auto;color:var(--mut)}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:0;width:min(560px,calc(100vw - 24px));box-shadow:0 12px 40px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+dialog h2{margin:0;font-size:17px}
+dialog label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+dialog input,dialog select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--card);color:var(--ink);font-size:14px;width:100%}
+dialog .hint{margin:0;font-size:12px;color:var(--mut)}
+dialog details{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+dialog details summary{cursor:pointer;font-size:13px}
+dialog details[open] summary{margin-bottom:8px}
+dialog details>*+*{margin-top:8px}
+dialog .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+dialog .row .sp{flex:1}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(4,1fr)}.k.st{grid-column:span 4}}
+@media(max-width:900px){.a4,.a5,.a6,.a7,.a8{grid-column:span 12}.kpis{grid-template-columns:1fr 1fr}.k.st{grid-column:span 2}main{padding:12px}header h1{font-size:19px}}
+@media(max-width:640px){header{padding:12px 14px}header h1{font-size:16px}.logo{height:38px}header p{font-size:11.5px}.btn{padding:6px 10px;font-size:13px}main{padding:10px}.filters{grid-template-columns:1fr 1fr;gap:8px}.f select,.f input{font-size:16px}.kpis{gap:8px}.k{padding:8px 10px;gap:8px}.ic{width:32px;height:32px}.ic svg{width:18px;height:18px}.k b{font-size:22px}.k.big b{font-size:24px}.card{padding:10px}table{font-size:12px}th,td{padding:5px 7px}.tw{max-height:320px}svg text{font-size:14px}}
+[hidden]{display:none!important}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--brand);color:#fff;border:0;border-radius:24px;padding:11px 18px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:15}
+#botp{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:380px;max-width:calc(100vw - 24px);height:min(560px,75vh);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.3);display:flex;flex-direction:column;z-index:16;overflow:hidden}
+.bh{background:var(--brand);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}.bh button{background:none;border:0;color:#fff;font-size:16px;cursor:pointer}
+#botlog{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.m{padding:8px 12px;border-radius:12px;max-width:88%;white-space:pre-wrap;overflow-wrap:anywhere}.m.me{align-self:flex-end;background:var(--brand2);color:#fff}.m.bot{align-self:flex-start;background:var(--head);border:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}.chips button{background:none;border:1px solid var(--line);border-radius:14px;padding:3px 10px;font-size:12px;cursor:pointer}
+.bi{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}.bi input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--card);font-size:16px}.gobtn{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:0 14px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="data:image/png;base64,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" alt="TADECO – Tagum Agricultural Development Co" width="158" height="46">
+  <div><h1>TPD CORRUGATED BOARD INVENTORY MONITORING</h1><p>Corrugator to Flexo transfer car &nbsp;|&nbsp; <span id="asof"></span></p></div>
+  <div class="sp"></div>
+  <span class="pill" id="sync" data-s="demo" role="status" aria-live="polite"><i class="dot"></i><span id="synctxt">Snapshot · not connected</span></span>
+  <button class="btn" id="syncnow">Sync now</button>
+  <button class="btn" id="cfg">Data source</button>
+  <button class="btn" id="theme">Dark mode</button>
+  <button class="btn" id="reset">Reset filters</button>
+</header>
+<main>
+  <div class="banner" id="banner" hidden></div>
+  <div class="alert" id="alerts" hidden></div>
+  <section class="filters" id="filters"></section>
+  <section class="slic" id="slicers"></section>
+  <section class="act" id="active"></section>
+  <section class="kpis" id="kpis"></section>
+  <section class="grid">
+    <div class="card a6" style="order:2"><h2>Remaining stock percentage<small>Click a slice to filter</small></h2><div id="donut"></div></div>
+    <div class="card a6" style="order:3"><h2>Delivered to Flexo, by machine<small id="dl1"></small></h2><div id="deliv"></div><div class="leg" id="delivleg"></div></div>
+    <div class="card a8" style="order:5"><h2>Stock status by SKU<small>Click a row to filter</small></h2><div class="tw" id="skutbl"></div></div>
+    <div class="card a12" style="order:4"><h2>Remaining stock per SKU<small id="remnote"></small></h2><div id="rem"></div><div class="leg"><span><i style="background:var(--s0)"></i>Out of stock (0)</span><span><i style="background:var(--s1)"></i>Low (≤ 7,500)</span><span><i style="background:var(--s2)"></i>Medium (≤ 15,000)</span><span><i style="background:var(--s3)"></i>High (&gt; 15,000)</span></div></div>
+    <div class="card a4" style="order:6"><h2>Stock in vs delivered<span class="sp"></span><div class="seg" id="grp"><button data-g="d" class="on">Day</button><button data-g="w">Week</button><button data-g="m">Month</button></div></h2><div id="move"></div><div class="leg"><span><i style="background:var(--in)"></i>In from Corrugator</span><span><i style="background:var(--out)"></i>Out to Flexo</span></div></div>
+    <div class="card a12" style="order:8"><h2>Time consumed, Corrugator to Flexo<small id="dl2"></small><small>From the first stock in to the last delivery out to Flexo, per SKU per day</small><span class="sp"></span><small id="tavg"></small></h2><div class="tw" id="tcons"></div></div>
+    <div class="card a12" style="order:9"><h2>Inventory movement<small>Newest first. Balances carry forward from every earlier transaction, per SKU</small><span class="sp"></span><button class="btn" id="csv">Export CSV</button></h2><div class="tw" id="ledger"></div></div>
+  </section>
+<footer class="foot">Reporting boundary: Corrugator to Flexo transfer car. Status rules: Out of Stock = 0, Low ≤ 7,500, Medium ≤ 15,000, High &gt; 15,000. Balances carry forward per SKU and never go below 0. Received, delivered, charts and tables cover the current day (resets automatically at midnight; choose “All history” to see everything). Box type and capacity are read from the SKU description.</footer>
+</main>
+
+<dialog id="dlg"><form method="dialog" id="cfgform">
+  <h2>Data source: Google Sheets</h2>
+  <label>Google Apps Script Web App URL<input id="c_url" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+  <p class="hint">Paste the Web App URL from your Apps Script deployment (see SETUP.md). The dashboard checks the sheet automatically and updates itself when records are added or edited.</p>
+  <label>Auto refresh<select id="c_int"><option value="15">Every 15 seconds</option><option value="30">Every 30 seconds</option><option value="60">Every minute</option><option value="300">Every 5 minutes</option><option value="0">Off (manual)</option></select></label>
+  <div class="row"><button type="button" class="btn" id="c_file">Load from a file instead</button><span class="sp"></span><button class="btn" value="cancel">Close</button><button type="button" class="btn pri" id="c_save">Save &amp; connect</button></div>
+  <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
+</form></dialog>
+
+<button id="botfab" class="fab" hidden>Ask AI</button>
+<aside id="botp" hidden role="dialog" aria-label="AI assistant"><div class="bh"><b>Inventory assistant</b><button id="botx" aria-label="Close">✕</button></div><div id="botlog"><div class="m bot">Ask me about stock levels, deliveries or movements in the current view. I answer from the filtered dashboard data.</div></div><div class="chips" id="botchips"></div><div class="bi"><input id="botin" placeholder="Ask about your inventory…" autocomplete="off"><button id="botgo" class="gobtn">Send</button></div></aside>
+<div id="msg"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* CONFIGURATION: click "Data source" and paste your Google Apps Script Web App URL,
+   or put it in SCRIPT_URL below so every visitor connects automatically. */
+const CONFIG={
+  SCRIPT_URL:"https://script.google.com/macros/s/AKfycbzg12fTrxH9pCEq_-YXHCjtZXNTmQXPRR2CrvYKhx24oQvs77kXIOJ3hl7VEU1cv5oV/exec",     // Web App URL (ends in /exec) from your Apps Script deployment
+  REFRESH_SEC:15,    // how often to check Google Sheets for changes (0 = manual only)
+  CYCLE_DAYS:1,      // only the "Delivered to Flexo, by machine" and "Time consumed" charts reset every N days; everything else shows all history
+  CYCLE_ANCHOR:""    // optional first day of a cycle, "YYYY-MM-DD" (default: the earliest entry in the workbook)
+};
+
+// ---- Snapshot of the workbook (INVENTORY IN, INVENTORY OUT, CORRUGATED SKU) shown until Google Sheets connects ----
+const DEMO={"ins":[{"id":1,"wk":46,"d":"2026-11-14","t":"09:16:27","shift":"DAY SHIFT","q":3000,"sku":"SB00000006","desc":"SFG-13KG BODY DPC-1","cust":"DAPACOR"},{"id":2,"wk":46,"d":"2026-11-14","t":"09:25:15","shift":"DAY SHIFT","q":3000,"sku":"SB00000289","desc":"SFG-SAN LORENZO O-PAD/SLEEVE","cust":"BLUEHOUSE GLOBAL"},{"id":3,"wk":46,"d":"2026-11-14","t":"09:48:42","shift":"DAY SHIFT","q":7000,"sku":"SB00000003","desc":"SFG-10KG COVER LANI","cust":"DAPACOR"}],"outs":[{"id":1,"wk":46,"d":"2026-11-14","t":"09:29:03","shift":"DAY SHIFT","q":6000,"fx":"Flexo 01","sku":"SB00000006","desc":"SFG-13KG BODY DPC-1","cust":"DAPACOR"},{"id":2,"wk":46,"d":"2026-11-14","t":"09:49:19","shift":"DAY SHIFT","q":6000,"fx":"Flexo 05","sku":"SB00000017","desc":"SFG-13KG COVER DPC STD BROWN","cust":"DAPACOR"}],"sku":[{"sku":"SB00000180","desc":"12X1KG DIURON AGWAY 1504X531","cust":"AGWAY"},{"sku":"SB00000359","desc":"SFG-10XKG DIURON AGWAY 1653X625","cust":"AGWAY"},{"sku":"SB00000367","desc":"SFG-12X1000ML BOX","cust":"AGWAY"},{"sku":"SB00000233","desc":"SFG-13KG COVER 1748X335 BROWN WAXED OS","cust":"BLUEHOUSE GLOBAL"},{"sku":"SB00000287","desc":"SFG-SAN LORENZO TOP-WHITE","cust":"BLUEHOUSE GLOBAL"},{"sku":"SB00000288","desc":"SFG-SAN LORENZO BODY","cust":"BLUEHOUSE GLOBAL"},{"sku":"SB00000289","desc":"SFG-SAN LORENZO O-PAD/SLEEVE","cust":"BLUEHOUSE GLOBAL"},{"sku":"SB00000002","desc":"SFG-10KG BODY LANI","cust":"DAPACOR"},{"sku":"SB00000003","desc":"SFG-10KG COVER LANI","cust":"DAPACOR"},{"sku":"SB00000006","desc":"SFG-13KG BODY DPC-1","cust":"DAPACOR"},{"sku":"SB00000008","desc":"SFG-13KG BODY DPC-2","cust":"DAPACOR"},{"sku":"SB00000015","desc":"SFG-13KG COVER DPC REDUCED BROWN","cust":"DAPACOR"},{"sku":"SB00000016","desc":"SFG-13KG COVER DPC 1748x332 WHITE","cust":"DAPACOR"},{"sku":"SB00000017","desc":"SFG-13KG COVER DPC STD BROWN","cust":"DAPACOR"},{"sku":"SB00000023","desc":"SFG-13KG COVER WHITE 2-UP 1749X664","cust":"DAPACOR"},{"sku":"SB00000030","desc":"SFG-15KG COVER DPC","cust":"DAPACOR"},{"sku":"SB00000042","desc":"SFG-5.5PA LD BODY DPC","cust":"DAPACOR"},{"sku":"SB00000053","desc":"SFG-6.0625\" LD BODY DPC","cust":"DAPACOR"},{"sku":"SB00000055","desc":"SFG-6.0625\" PA LD COVER DPC","cust":"DAPACOR"},{"sku":"SB00000100","desc":"SFG-18KG BODY FRESCANA","cust":"DAPACOR"},{"sku":"SB00000148","desc":"SFG-13KG COVER 173X332 WHITE","cust":"DAPACOR"},{"sku":"SB00000161","desc":"SFG-13KG BODY 1707X343 WAXED","cust":"DAPACOR"},{"sku":"SB00000162","desc":"SFG-13KG COVER 1749X332 WHITE ","cust":"DAPACOR"},{"sku":"SB00000204","desc":"SFG-13KG BODY-140GSM","cust":"DAPACOR"},{"sku":"SB00000234","desc":"SFG-5KG B-CHIPS 1KT","cust":"DAPACOR"},{"sku":"SB00000290","desc":"SFG-5KG B-CHIPS 1FX","cust":"DAPACOR"},{"sku":"SB00000327","desc":"SFG-13KG BODY-1707X342X WAXED 150 MIDL","cust":"DAPACOR"},{"sku":"SB00000361","desc":"SFG-13KG BODY DPC-186-1C","cust":"DAPACOR"},{"sku":"SB00000406","desc":"SFG-13KG BODY 1707X332","cust":"DAPACOR"},{"sku":"SB00000415","desc":"SFG-13KG BODY-1707X332 150MIDL","cust":"DAPACOR"},{"sku":"SB00000428","desc":"SFG-CALENDAR BOX 928X605MM","cust":"DAPACOR"},{"sku":"SB00000011","desc":"SFG-13KG BODY SV DM","cust":"DEL MONTE"},{"sku":"SB00000022","desc":"SFG-13KG COVER SV","cust":"DEL MONTE"},{"sku":"SB00000032","desc":"SFG-18KG BODY SLIT-SLOT","cust":"DEL MONTE"},{"sku":"SB00000037","desc":"SFG-3KG BODY DM","cust":"DEL MONTE"},{"sku":"SB00000039","desc":"SFG-3KG COVER-B FLUTE","cust":"DEL MONTE"},{"sku":"SB00000041","desc":"SFG-5.25 PA TRAY DM GOLD 2-OUTS","cust":"DEL MONTE"},{"sku":"SB00000045","desc":"SFG-5.5N PA TRAY DM GOLD 2-OUTS","cust":"DEL MONTE"},{"sku":"SB00000056","desc":"SFG-6.0625IN PA TRAY DM","cust":"DEL MONTE"},{"sku":"SB00000070","desc":"SFG-15KG BODY DM","cust":"DEL MONTE"},{"sku":"SB00000101","desc":"SFG-9-DOWN SOLO PAPAYA","cust":"DEL MONTE"},{"sku":"SB00000128","desc":"SFG-6.0625PA LD BODY-2UP","cust":"DEL MONTE"},{"sku":"SB00000172","desc":"SFG-13KG COVER HL HONEY DM WHITE","cust":"DEL MONTE"},{"sku":"SB00000203","desc":"13KG BODY 170X686 ALL-IN 2UP","cust":"DEL MONTE"},{"sku":"SB00000224","desc":"SFG-13KG BODY 1707X686 DM 140MIDL2-UP","cust":"DEL MONTE"},{"sku":"SB00000237","desc":"SFG-13KG COVER SV 200 FX","cust":"DEL MONTE"},{"sku":"SB00000238","desc":"SFG-13KG BODY DM SV 200FX","cust":"DEL MONTE"},{"sku":"SB00000255","desc":"SFG-15KG BODY DM NSP-1","cust":"DEL MONTE"},{"sku":"SB00000266","desc":"SFG-5.25 PA TRAY DM-300FX 1OUT","cust":"DEL MONTE"},{"sku":"SB00000267","desc":"SFG-5.5 PA TRAY DM 300FX 1OUT","cust":"DEL MONTE"},{"sku":"SB00000269","desc":"SFG-18KG COVER ROSY DM NSP-1","cust":"DEL MONTE"},{"sku":"SB00000274","desc":"SFG-5.5 PA TRAY DM 300FX 2 OUTS","cust":"DEL MONTE"},{"sku":"SB00000276","desc":"SFG-15KG COVER 2018X323 DM NSP-1","cust":"DEL MONTE"},{"sku":"SB00000317","desc":"SFG-15KG COVER 2018X323 DM NSP-1","cust":"DEL MONTE"},{"sku":"SB00000328","desc":"SFG-13KG COVER PREM. SV 186visy","cust":"DEL MONTE"},{"sku":"SB00000329","desc":"SFG-13KG BODY DM-186-140MidL","cust":"DEL MONTE"},{"sku":"SB00000331","desc":"SFG-13KG BODY DM 186-140 1707X334","cust":"DEL MONTE"},{"sku":"SB00000340","desc":"SFG-14.2KG BODY -DM ALL IN VER. 2","cust":"DEL MONTE"},{"sku":"SB00000341","desc":"SFG-14.2KG COVER-DM ALL IN 1707 X 367 X 238 X 129","cust":"DEL MONTE"},{"sku":"SB00000342","desc":"SFG-14.2KG COVER DM ALL IN","cust":"DEL MONTE"},{"sku":"SB00000364","desc":"SFG-13KG COVER 186visy-2-UP","cust":"DEL MONTE"},{"sku":"SB00000365","desc":"SFG-13KG BODY DM SV 186-140 2-UP","cust":"DEL MONTE"},{"sku":"SB00000366","desc":"SFG-18KG COVER ROSY-186visy","cust":"DEL MONTE"},{"sku":"SB00000368","desc":"SFG-13KG COVER CLASSIC SV 186visy","cust":"DEL MONTE"},{"sku":"SB00000369","desc":"SFG-14.2KG BODY DM 186 3C","cust":"DEL MONTE"},{"sku":"SB00000370","desc":"SFG-14.2KG COVER DM 186 2C","cust":"DEL MONTE"},{"sku":"SB00000393","desc":"SFG-18KG DM COVER NSP - 1_186-140-186","cust":"DEL MONTE"},{"sku":"SB00000429","desc":"SFG-5.5PA TRAY DM NSP 1999MM-275KLB","cust":"DEL MONTE"},{"sku":"SB00000430","desc":"SFG-13KG COVER 1748X344 WHITE","cust":"DEL MONTE"},{"sku":"SB00000437","desc":"SFG-18KG DM COVER - ALL IN","cust":"DEL MONTE"},{"sku":"SB00000438","desc":"14.2KG COVER, DM H","cust":"DEL MONTE"},{"sku":"SB00000439","desc":"14.2KG COVER, DM S","cust":"DEL MONTE"},{"sku":"SB00000440","desc":"14.2KG BODY, DM H","cust":"DEL MONTE"},{"sku":"SB00000441","desc":"14.2KG BODY, DM S","cust":"DEL MONTE"},{"sku":"SB00000486","desc":"5.5KG PAPAYA BOX COVER 2UP H-TO-H 1494x532","cust":"DEL MONTE"},{"sku":"SB00000487","desc":"5.5KG PAPAYA BOX BODY 2UP FLAP-TO-FLAP 1462X520","cust":"DEL MONTE"},{"sku":"SB00000442","desc":"18KG BODY, DM H","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000443","desc":"18KG BODY, DM S 275&230","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000444","desc":"18KG BODY, DM H","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000445","desc":"13KG COVER, DM H","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000446","desc":"13KG COVER, DM S","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000447","desc":"13KG BODY , DM SV H","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000448","desc":"13KG BODY 1707X686 ALL IN DM 2UP (H)","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000449","desc":"13KG BODY, DM SV S","cust":"DEL MONTE FRESH PRODUCE INT'L."},{"sku":"SB00000394","desc":"SFG-DOCUMENT FILING BOX BODY 1476X478","cust":"DICT"},{"sku":"SB00000395","desc":"SFG-DOCUMENT FILING BOX COVER-2UP 864X658","cust":"DICT"},{"sku":"SB00000246","desc":"SFG-13KG TOP WHITE 1748X328","cust":"DOLE"},{"sku":"SB00000247","desc":"SFG-13KG TOP BROWN 1748X328","cust":"DOLE"},{"sku":"SB00000248","desc":"SFG-7KG DOLE SHARBATLY COVER 1410X284 WHT","cust":"DOLE"},{"sku":"SB00000249","desc":"SFG-7KG DOLE ME BODY 1378X302","cust":"DOLE"},{"sku":"SB00000250","desc":"SFG-13KG DOLE MIYA COVER 1838X328 WHT","cust":"DOLE"},{"sku":"SB00000251","desc":"SFG-13KG BOTTOM MIYA 1801X345","cust":"DOLE"},{"sku":"SB00000363","desc":"SFG-13KG BODY-DOLE NV 1715X345","cust":"DOLE"},{"sku":"SB00000372","desc":"SFG-13KG BODY DOLE 1751X343-2UP","cust":"DOLE"},{"sku":"SB00000374","desc":"13KG DOLE COVER 1748x328","cust":"DOLE"},{"sku":"SB00000376","desc":"SFG-13KG TOP BROWN 1810X328","cust":"DOLE"},{"sku":"SB00000379","desc":"SFG-13KG BOTTOM DOLE 1777X340","cust":"DOLE"},{"sku":"SB00000389","desc":"SFG-15KG TOP BROWN-2013X332","cust":"DOLE"},{"sku":"SB00000390","desc":"SFG-15KG BOTTOM 1977X352","cust":"DOLE"},{"sku":"SB00000392","desc":"SFG-13KG SOFIA BOTTOM PADS 6OUTS-2 UP","cust":"DOLE"},{"sku":"SB00000398","desc":"SFG-15KG COVER DOLE BROWN UP","cust":"DOLE"},{"sku":"SB00000176","desc":"SFG-800G EVERLAND BOARD","cust":"EVERLAND AGRI PRODUCT"},{"sku":"SB00000471","desc":"SFG-13KG AMORITA NZ- 1810X328 - NON WAX","cust":"FARMIND"},{"sku":"SB00000405","desc":"SFG-BIR MAILER BOX 1587X795","cust":"FORTUNE EMPIRE MPC"},{"sku":"SB00000426","desc":"SFG-FROZEN SHRIMP BOX 1564X462","cust":"J & S AQUACULTURE"},{"sku":"SB00000431","desc":"SFG-FROZEN SHRIMP BOX 1564X462","cust":"J & S AQUACULTURE"},{"sku":"SB00000356","desc":"SFG-11X11X1.5IN PIZZA BOX 2UP","cust":"KR CORNER"},{"sku":"SB00000357","desc":"SFG-18X18X1.5IN PIZZA BOX-1UP","cust":"KR CORNER"},{"sku":"SB00000427","desc":"SFG-SEASON'S HAM BOX 626X914","cust":"KVI"},{"sku":"SB00000137","desc":"SFG-13KG BODY LFC","cust":"LAPANDAY"},{"sku":"SB00000138","desc":"SFG-13KG COVER LFC","cust":"LAPANDAY"},{"sku":"SB00000213","desc":"SFG-6.0625in PA LFC TRAY 2-UP 1388X1014","cust":"LAPANDAY"},{"sku":"SB00000373","desc":"SFG-13KG BODY 2UP","cust":"LAPANDAY"},{"sku":"SB00000290","desc":"SFG-13KG COVER ZHEN ZUAN  WHITE 1745X335","cust":"MARSMAN"},{"sku":"SB00000332","desc":"SFG-DRIED MANGO BOX 481X1464","cust":"MARTSONS"},{"sku":"SB00000315","desc":"SFG-7KG B-CHIPS 1462X491","cust":"MARTSONS"},{"sku":"SB00000408","desc":"SFG-CANNED COCO BOC 1139X323","cust":"MILLENIUM COCO SPECIALTY"},{"sku":"SB00000409","desc":"SFG-CANNED COCO DIVIDER 924X428","cust":"MILLENIUM COCO SPECIALTY"},{"sku":"SB00000410","desc":"SFG-CANNNED COCO DIVIDER 648X660","cust":"MILLENIUM COCO SPECIALTY"},{"sku":"SB00000007","desc":"SFG-13KG BODY DPC-1 PGGP","cust":"PT GREAT GIANT PINEAPPLE"},{"sku":"SB00000084","desc":"SFG-13KG COVER BROWN-PGGP","cust":"PT GREAT GIANT PINEAPPLE"},{"sku":"SB00000208","desc":"SFG-12KG COVER WHITE PGGP","cust":"PT GREAT GIANT PINEAPPLE"},{"sku":"SB00000066","desc":"SFG-8LBS. BCHIPS 1462X/GOLD BCHIPS","cust":"SEES INTERNATIONAL"},{"sku":"SB00000098","desc":"SFG-10GC BCHIPS 1344X418","cust":"SEES INTERNATIONAL"},{"sku":"SB00000099","desc":"SFG-13-18LBS BCHIPS 1276 X 447","cust":"SEES INTERNATIONAL"},{"sku":"SB00000130","desc":"SFG-3GC BCHIPS 1286X430","cust":"SEES INTERNATIONAL"},{"sku":"SB00000005","desc":"SFG-12LB_ 5.44 KG BANANA CHIPS","cust":"SNAPSNAX VENTURES INC."},{"sku":"SB00000067","desc":"SFG-ORCHARD CHOICE BANANA CHIPS","cust":"SNAPSNAX VENTURES INC."},{"sku":"SB00000087","desc":"SFG-4.99KG BCHIPS","cust":"SNAPSNAX VENTURES INC."},{"sku":"SB00000147","desc":"SFG-14-18LBS BCHIPS GREEN SVI","cust":"SNAPSNAX VENTURES INC."},{"sku":"SB00000333","desc":"SFG- FOOD PACK BOX 12X12X2 2-OUTS","cust":"SIROK"},{"sku":"SB00000291","desc":"SFG-13KG BODY SUMIFRU 1704X335","cust":"SUMIFRU"},{"sku":"SB00000195","desc":"SFG-15KG COVER 1999X335","cust":"SUMIFRU"},{"sku":"SB00000196","desc":"SFG-15KG BODY 1966X350","cust":"SUMIFRU"},{"sku":"SB00000385","desc":"SFG-15KG BODY 1966X350","cust":"SUMIFRU"},{"sku":"SB00000113","desc":"SFG-18KG COVER 1833x351","cust":"SUMIFRU"},{"sku":"SB00000480","desc":"SFG-18KG BODY 1796x380","cust":"SUMIFRU"},{"sku":"SB00000297","desc":"SFG-5KG POMELO BOX WHITE","cust":"TADECO"},{"sku":"SB00000012","desc":"SFG-13KG BODY UPI","cust":"UNIFRUTTI"},{"sku":"SB00000075","desc":"SFG-13KG COVER UPI STD. WHITE","cust":"UNIFRUTTI"},{"sku":"SB00000102","desc":"SFG-18KG BODY PINE - UTPI","cust":"UNIFRUTTI"},{"sku":"SB00000103","desc":"SFG-18KG COVER BIG BOX","cust":"UNIFRUTTI"},{"sku":"SB00000118","desc":"SFG-13KG COVER UPI BROWN","cust":"UNIFRUTTI"},{"sku":"SB00000044","desc":"SFG-5.5\" PA LD COVER DPC","cust":"VARIOUS CUSTOMER"},{"sku":"SB00000149","desc":"SFG-13KG COVER 1749X332 BROWN","cust":"VARIOUS CUSTOMER"},{"sku":"SB00000163","desc":"SFG-13KG COVER 1749X332 BROWN","cust":"VARIOUS CUSTOMER"},{"sku":"SB00001871","desc":"940x432mm PIZZA BOARD","cust":"TLTC"},{"sku":"SB00000481","desc":"13KG FLAP-TO-FLAP WHITE COVER_2-UP -1748x664 ","cust":"TPD-IN-HOUSE"},{"sku":"SB00000484","desc":"13KG Cover White 328 FLAP-TO-FLAP 2-UP 1748x656","cust":"TPD-IN-HOUSE"}]};
+
+const MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const kfmt=n=>Math.abs(n)>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":String(n);
+const fd=d=>new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+const ft=t=>{const[h,m,s]=t.split(":").map(Number);return (h%12||12)+":"+pad(m)+":"+pad(s||0)+" "+(h<12?"AM":"PM")};
+const tsec=t=>{const[h,m,s]=t.split(":").map(Number);return h*3600+m*60+(s||0)};
+const dur=m=>Math.floor(m/60)+" h "+pad(m%60)+" min";
+const st=v=>v<=0?0:v<=7500?1:v<=15000?2:3;
+const SN=["Out of Stock","Low","Medium","High"];
+const trunc=(s,n)=>s.length>n?s.slice(0,n-1)+"…":s;
+const ic=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const IC=[ic('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>'),ic('<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>'),ic('<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>'),ic('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'),ic('<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>'),ic('<circle cx="12" cy="12" r="9"/><path d="M12 7v10M8 13l4 4 4-4"/>'),ic('<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>'),ic('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>')];
+const OTHERC="#8a948d";
+const BLANK={scope:"",dfrom:"",dto:"",q:"",sk3:"",sku:"",cust:"",box:"",cap:"",fx:"",wk:"",mon:"",yr:"",shift:"",status:""};
+const FLAB={scope:"Period",dfrom:"From",dto:"To",q:"Search",sk3:"SKU ends with",sku:"SKU",cust:"Customer",box:"Box type",cap:"Capacity",fx:"Flexo",wk:"Week",mon:"Month",yr:"Year",shift:"Shift",status:"Status"};
+let TX=[],SKUS={},F={...BLANK},G="d",COL={},CTX=null,FSIG="",MASTER=false;
+
+/* ======================= DATA MODEL ======================= */
+const hasW=(d,w)=>new RegExp("(^|[^A-Z])("+w+")([^A-Z]|$)").test(d);
+const boxOf=d=>{d=String(d).toUpperCase();return hasW(d,"BODY|BOTTOM")?"BODY":hasW(d,"COVER|TOP")?"COVER":hasW(d,"TRAY")?"TRAY":/PAD|SLEEVE/.test(d)?"PAD/SLEEVE":hasW(d,"DIVIDER")?"DIVIDER":"OTHER"};
+const capOf=d=>{const m=String(d).toUpperCase().match(/(\d+(?:\.\d+)?)\s*KG/);return m?m[1]+"KG":"N/A"};
+
+function build(d,keep){
+  const prev=keep?{...F}:null;
+  SKUS={};d.sku.forEach(s=>SKUS[s.sku]=s);MASTER=d.sku.length>0;TX=[];
+  const add=(r,type)=>{const m=SKUS[r.sku]||{};const desc=r.desc||m.desc||"",cust=r.cust||m.cust||"—",[y,mo]=r.d.split("-");
+    TX.push({id:r.id,d:r.d,t:r.t,k:r.d+" "+r.t,sku:r.sku,type,q:+r.q,fx:r.fx||"",desc,cust,shift:r.shift||"—",wk:r.wk,
+      box:m.box||boxOf(desc),cap:m.cap||capOf(desc),mon:MON[+mo-1],yr:y,o:type==="IN"?0:1,known:!MASTER||!!SKUS[r.sku],
+      hay:(r.sku+" "+desc+" "+cust).toLowerCase()})};
+  d.ins.forEach(r=>add(r,"IN"));d.outs.forEach(r=>add(r,"OUT"));
+  TX.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:a.o-b.o||(a.id||0)-(b.id||0));
+  const bal={};
+  TX.forEach(x=>{const p=bal[x.sku]||0;x.prev=p;bal[x.sku]=Math.max(0,p+(x.type==="IN"?x.q:-x.q));x.bal=bal[x.sku]});
+  COL={};const PAL=["#40a2ed","#25b5b5","#fad050","#ff2829","#33ac2e","#8097b1","#a66cf0","#f08a4b"];[...new Set(TX.map(x=>x.sku))].sort().forEach((s,i)=>COL[s]=PAL[i]||`hsl(${Math.round((i*137.508)%360)} 52% 55%)`);
+  F={...BLANK};buildFilters();
+  if(prev)Object.keys(prev).forEach(k=>{if(!prev[k])return;const el=document.querySelector(`#filters select[data-k="${k}"]`);
+    if(el&&![...el.options].some(o=>o.value===prev[k]))return;F[k]=prev[k]});
+  render();
+}
+function buildFilters(){
+  const u=f=>[...new Set(TX.map(f).filter(v=>v!==""&&v!=null))];
+  const dates=u(x=>x.d).sort();
+  const defs=[["sku","SKU",u(x=>x.sku).sort(),v=>v+(SKUS[v]&&SKUS[v].desc?" · "+trunc(SKUS[v].desc,28):"")],["cust","Customer",u(x=>x.cust).sort()],["box","Box type",u(x=>x.box).sort()],["cap","Box capacity",u(x=>x.cap).sort((a,b)=>parseFloat(a)-parseFloat(b)||(a<b?-1:1))],
+    ["fx","Delivered to (Flexo)",u(x=>x.fx).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))],["wk","Week no.",u(x=>String(x.wk)).sort((a,b)=>a-b),v=>"Week "+v],
+    ["mon","Month",MON.filter(m=>u(x=>x.mon).includes(m))],["yr","Year",u(x=>x.yr).sort()]];
+  const shifts=u(x=>x.shift).sort();
+  const sig=JSON.stringify([defs.map(d=>d[2]),u(x=>x.sku),shifts,dates[0],dates[dates.length-1]]);
+  if(sig===FSIG)return;FSIG=sig;
+  $("filters").innerHTML=
+   `<div class="f"><label for="f_q">Search SKU / description / customer</label><input id="f_q" data-k="q" type="search" placeholder="Type to search…" autocomplete="off"></div>`+
+   `<div class="f"><label for="f_sk3">SKU last 5 digits</label><input id="f_sk3" data-k="sk3" list="dl_sk3" type="search" inputmode="numeric" maxlength="5" placeholder="Type or pick…" autocomplete="off"><datalist id="dl_sk3">${[...new Set(u(x=>x.sku).map(s=>s.slice(-5)))].sort().map(v=>{const m=u(x=>x.sku).filter(s=>s.endsWith(v));return `<option value="${v}">${esc(m.length>1?m.length+" SKUs":(SKUS[m[0]]&&SKUS[m[0]].desc)||m[0])}</option>`}).join("")}</datalist></div>`+
+   `<div class="f"><label for="f_dfrom">Date from</label><input id="f_dfrom" data-k="dfrom" type="date" min="${dates[0]||""}" max="${dates[dates.length-1]||""}"></div>`+
+   `<div class="f"><label for="f_dto">Date to</label><input id="f_dto" data-k="dto" type="date" min="${dates[0]||""}" max="${dates[dates.length-1]||""}"></div>`+
+   defs.map(([k,l,o,f])=>`<div class="f"><label for="f_${k}">${l}</label><select id="f_${k}" data-k="${k}"><option value="">All</option>${o.map(v=>`<option value="${esc(v)}">${esc(f?f(v):v)}</option>`).join("")}</select></div>`).join("");
+  const chips=(k,l,opts)=>`<div class="sg"><b>${l}</b><button class="chip" data-k="${k}" data-v="">All</button>${opts.map(([v,n])=>`<button class="chip" data-k="${k}" data-v="${esc(v)}">${esc(n)}</button>`).join("")}</div>`;
+  $("slicers").innerHTML=`<div class="sg"><b>Flexo &amp; time charts</b><button class="chip" id="cyclab" data-k="scope" data-v=""></button><button class="chip" data-k="scope" data-v="all">All history</button></div>`+chips("shift","Shift",shifts.map(s=>[s,s]))+chips("status","Stock status",SN.map((n,i)=>[String(i),n]));
+}
+function syncControls(){
+  document.querySelectorAll("#filters [data-k]").forEach(e=>{const v=F[e.dataset.k]||"";if(e.value!==v)e.value=v});
+  document.querySelectorAll("#slicers .chip").forEach(b=>b.classList.toggle("on",(F[b.dataset.k]||"")===b.dataset.v));
+  document.querySelectorAll(".sc").forEach(b=>b.classList.toggle("on",F.status===b.dataset.v));
+  const dn={scope:()=>"All history",status:v=>SN[+v],wk:v=>"Week "+v,dfrom:fd,dto:fd};
+  $("active").innerHTML=Object.keys(F).filter(k=>F[k]).map(k=>`<button class="chip" data-clear="${k}" title="Remove filter">${FLAB[k]}: ${esc((dn[k]||(v=>v))(F[k]))} <i>✕</i></button>`).join("");
+}
+
+/* ======================= REPORTING CYCLE ======================= */
+const DAYMS=864e5,dnum=d=>Math.floor(Date.parse(d+"T00:00:00Z")/DAYMS),isod=n=>new Date(n*DAYMS).toISOString().slice(0,10);
+const todayISO=()=>{const n=new Date();return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate())};
+let LASTCYC="",DAILY=true;
+function cycle(){
+  const L=Math.max(1,+CONFIG.CYCLE_DAYS||2),a=dnum(CONFIG.CYCLE_ANCHOR||(TX[0]&&TX[0].d)||todayISO()),s=a+Math.floor((dnum(todayISO())-a)/L)*L;
+  return{s:isod(s),e:isod(s+L-1),L};
+}
+setInterval(()=>{if(TX.length&&!F.scope&&cycle().s!==LASTCYC)render()},30000);
+
+/* ======================= RENDER ======================= */
+function render(){
+  const CY=cycle(),cyc=!F.scope&&!F.dfrom&&!F.dto&&!F.wk&&!F.mon&&!F.yr;DAILY=cyc;LASTCYC=CY.s;
+  syncControls();
+  const cl=$("cyclab");if(cl)cl.textContent=`${CY.L===1?"Today":"Current "+CY.L+"-day cycle"} · ${fd(CY.s).replace(/, \d{4}$/,"")}${CY.L>1?" – "+fd(CY.e).replace(/, \d{4}$/,""):""}`;
+  const T=TX[TX.length-1];
+  $("asof").textContent=T?"Latest entry: "+fd(T.d)+" "+ft(T.t):"No data";
+  const okSku=x=>(!F.sku||x.sku===F.sku)&&(!F.cust||x.cust===F.cust)&&(!F.box||x.box===F.box)&&(!F.cap||x.cap===F.cap)&&(!F.q||x.hay.includes(F.q.toLowerCase()))&&(!F.sk3||x.sku.endsWith(F.sk3));
+  const okTx=x=>(!F.dfrom||x.d>=F.dfrom)&&(!F.dto||x.d<=F.dto)&&(!F.wk||String(x.wk)===F.wk)&&(!F.shift||x.shift===F.shift)&&(!F.fx||(x.type==="OUT"&&x.fx===F.fx))&&(!F.mon||x.mon===F.mon)&&(!F.yr||x.yr===F.yr)&&true;
+  const none=()=>{CTX=null;["kpis","donut","deliv","rem","skutbl","move","tcons","ledger"].forEach(i=>$(i).innerHTML=`<div class="empty">No transactions match these filters.</div>`);$("delivleg").innerHTML="";$("alerts").hidden=true;$("tavg").textContent="";$("remnote").textContent=""};
+  let win=TX.filter(x=>okSku(x)&&okTx(x));
+  if(!win.length)return none();
+  const cut=win.reduce((m,x)=>x.d>m?x.d:m,"");
+  // Balance per SKU = running balance at its last transaction up to the end of the latest selected day
+  let allowed=null;
+  const mk=ok=>{const last={};TX.forEach(x=>{if(ok(x)&&x.d<=cut)last[x.sku]=x});
+    return Object.keys(last).sort().map(s=>{const l=last[s];
+      return{sku:s,desc:l.desc,cust:l.cust,box:l.box,cap:l.cap,bal:l.bal,in:win.filter(x=>x.sku===s&&x.type==="IN").reduce((a,x)=>a+x.q,0),out:win.filter(x=>x.sku===s&&x.type==="OUT").reduce((a,x)=>a+x.q,0),cin:TX.filter(x=>x.sku===s&&x.type==="IN"&&x.d<=cut).reduce((a,x)=>a+x.q,0)}})};
+  let rows=mk(okSku);
+  if(F.status!==""){allowed=new Set(rows.filter(r=>st(r.bal)===+F.status).map(r=>r.sku));win=win.filter(x=>allowed.has(x.sku));rows=rows.filter(r=>allowed.has(r.sku));if(!rows.length)return none()}
+  const ok=x=>okSku(x)&&(!allowed||allowed.has(x.sku));
+  const allRows=mk(okSku);
+  if(!rows.length&&!win.length)return none();
+  const rem=rows.reduce((a,r)=>a+Math.max(r.bal,0),0),deliv=win.filter(x=>x.type==="OUT").reduce((a,x)=>a+x.q,0),recv=win.filter(x=>x.type==="IN").reduce((a,x)=>a+x.q,0);
+  const cnt=[0,1,2,3].map(i=>allRows.filter(r=>st(r.bal)===i).length);
+  $("kpis").innerHTML=[["big","Total remaining stock",fmt(rem)],["big","Received from Corrugator",fmt(recv)],["big","Delivered to Flexo",fmt(deliv)],["","Total SKUs",rows.length],["st","",cnt]]
+    .map(([c,l,v],i)=>c==="st"?`<div class="k st">${[["c0","Out of stock"],["c1","Low"],["c2","Medium"],["c3","High"]].map(([cc,n],j)=>`<button class="sc ${cc}" data-k="status" data-v="${j}" title="Filter: ${n}">${IC[4+j]}<b>${v[j]}</b><span>${n}</span></button>`).join("")}</div>`:`<div class="k ${c}"><div class="ic">${IC[i]}</div><div><span>${l}</span><b>${v}</b></div></div>`).join("");
+  $("kpis").querySelectorAll(".sc").forEach(b=>b.classList.toggle("on",F.status===b.dataset.v));
+  CTX={filters:Object.fromEntries(Object.entries(F).filter(e=>e[1])),balances_as_of:cut,total_remaining:rem,total_received_from_corrugator:recv,total_delivered_to_flexo:deliv,sku_status_counts:{out_of_stock:cnt[0],low:cnt[1],medium:cnt[2],high:cnt[3]},skus:rows.map(r=>({sku:r.sku,description:r.desc,customer:r.cust,box_type:r.box,capacity:r.cap,stock_in:r.in,stock_out:r.out,remaining:r.bal,status:SN[st(r.bal)]})).slice(0,120),delivered_by_flexo:win.filter(x=>x.type==="OUT").reduce((a,x)=>(a[x.fx||"unknown"]=(a[x.fx||"unknown"]||0)+x.q,a),{}),movements:win.slice(-100).map(x=>({date:x.d,time:x.t,sku:x.sku,movement:x.type,qty:x.q,flexo:x.fx||undefined,shift:x.shift,previous_balance:x.prev,balance:x.bal}))};
+  alerts(win);
+  donut(rows,rem);const cw=cyc?win.filter(x=>x.d>=CY.s&&x.d<=CY.e):win,dl=cyc?(CY.L===1?"Resets daily · ":"Resets every "+CY.L+" days · ")+fd(CY.s).replace(/, \d{4}$/,""):"Selected period";["dl1","dl2"].forEach(i=>{const e=$(i);if(e)e.textContent=dl});deliveredFlexo(cw);remaining(rows);movement(win);timeCons(cw);
+  $("skutbl").innerHTML=`<table><tr><th>SKU</th><th class="l">Description</th><th class="l">Customer</th><th class="l">Type</th><th>Cap.</th><th>In</th><th>Out</th><th>Remaining</th><th>Status</th></tr>${rows.map(r=>`<tr class="clk" data-k="sku" data-v="${esc(r.sku)}"><td>${esc(r.sku)}</td><td class="l">${esc(r.desc)}</td><td class="l">${esc(r.cust)}</td><td class="l">${esc(r.box)}</td><td>${esc(r.cap)}</td><td>${fmt(r.in)}</td><td>${fmt(r.out)}</td><td><b>${fmt(r.bal)}</b></td><td><span class="badge b${st(r.bal)}">${SN[st(r.bal)]}</span></td></tr>`).join("")}</table>`;
+  const L=win.slice().reverse(),LM=500;
+  $("ledger").innerHTML=`<table><tr><th>Date</th><th>Time</th><th class="l">Shift</th><th>SKU</th><th class="l">Description</th><th class="l">Customer</th><th class="l">Movement</th><th>Previous balance</th><th>Stock in</th><th>Stock out</th><th class="l">Delivered to</th><th>Remaining balance</th><th>Status</th></tr>${L.slice(0,LM).map(x=>`<tr><td>${fd(x.d)}</td><td>${ft(x.t)}</td><td class="l">${esc(x.shift)}</td><td>${esc(x.sku)}</td><td class="l">${esc(x.desc)}</td><td class="l">${esc(x.cust)}</td><td class="l ${x.type==="IN"?"in":"out"}">${x.type==="IN"?"IN from Corrugator":"OUT to Flexo"}</td><td>${fmt(Math.max(x.prev,0))}</td><td class="in">${x.type==="IN"?fmt(x.q):""}</td><td class="out">${x.type==="OUT"?fmt(x.q):""}</td><td class="l">${esc(x.fx)}</td><td><b>${fmt(Math.max(x.bal,0))}</b></td><td><span class="badge b${st(x.bal)}">${SN[st(x.bal)]}</span></td></tr>`).join("")}</table>${L.length>LM?`<div class="empty">Showing the latest ${LM} of ${fmt(L.length)} entries. Narrow the filters or export CSV for all.</div>`:""}`;
+  LASTWIN=win;
+}
+let LASTWIN=[];
+function alerts(win){
+  const bad=win.filter(x=>x.type==="OUT"&&x.q>x.prev),unk=MASTER?[...new Set(win.filter(x=>!x.known).map(x=>x.sku))]:[];
+  const parts=[];
+  if(bad.length)parts.push(`<b>${bad.length}</b> delivery ${bad.length>1?"entries exceed":"entry exceeds"} the stock recorded as received (balance held at 0): ${bad.slice(0,3).map(x=>`${esc(x.sku)} → ${esc(x.fx||"?")}, ${fmt(x.q)} out vs ${fmt(x.prev)} available`).join("; ")}${bad.length>3?"; …":""}.`);
+  if(unk.length)parts.push(`<b>${unk.length}</b> SKU code${unk.length>1?"s are":" is"} not in the CORRUGATED SKU list: ${unk.slice(0,4).map(esc).join(", ")}${unk.length>4?", …":""}.`);
+  $("alerts").hidden=!parts.length;$("alerts").innerHTML=parts.length?"⚠ Data check: "+parts.join(" "):"";
+}
+/* ======================= CHARTS ======================= */
+const nice=m=>{if(m<=0)return 1000;const p=10**Math.floor(Math.log10(m)),n=m/p;return[1,2,2.5,5,10].find(x=>x>=n)*p};
+function axis(W,H,l,t,b,mx){let s="";for(let i=0;i<=4;i++){const y=t+(H-t-b)*(1-i/4);s+=`<line x1="${l}" x2="${W-8}" y1="${y}" y2="${y}" stroke="var(--line)"/><text class="mut" x="${l-6}" y="${y+4}" text-anchor="end">${kfmt(mx*i/4)}</text>`}return s}
+function hbar(id,items,o){
+  const W=o.W||560,rh=o.rh||26,l=o.l||96,t=18,b=22,r=62,H=t+b+rh*items.length,pw=W-l-r,mx=o.mx||nice(Math.max(...items.map(i=>i.val),1)),mc=Math.floor(l/7.6);let s="";
+  for(let i=0;i<=4;i++){const x=l+pw*i/4;s+=`<line x1="${x}" x2="${x}" y1="${t}" y2="${H-b}" stroke="var(--line)"/><text class="mut" x="${x}" y="${H-b+15}" text-anchor="middle">${kfmt(mx*i/4)}</text>`}
+  (o.th||[]).forEach(([v,n])=>{const x=l+v/mx*pw;s+=`<line x1="${x}" x2="${x}" y1="${t}" y2="${H-b}" stroke="var(--mut)" stroke-dasharray="4 4"/><text class="mut" x="${x}" y="${t-5}" text-anchor="middle">${n}</text>`});
+  items.forEach((it,i)=>{const y=t+rh*i+4,h=rh-8,w=Math.max(it.val,0)/mx*pw,a=it.attr?` class="clk" ${it.attr}`:"";
+    s+=(it.sub?`<text x="${l-8}" y="${y+h/2-1}" text-anchor="end" font-weight="700" style="font-size:${o.W?19:15}px"${a}>${esc(trunc(it.label,mc))}<title>${esc(it.title||it.label)}</title></text><text class="mut sub${it.attr?" clk":""}" ${it.attr||""} x="${l-8}" y="${y+h/2+(o.W?14:12)}" text-anchor="end" style="font-size:10px">${esc(trunc(it.sub,o.W?56:30))}</text>`:`<text x="${l-8}" y="${y+h/2+4}" text-anchor="end" font-weight="600"${a}>${esc(trunc(it.label,mc))}<title>${esc(it.title||it.label)}</title></text>`)+`<rect${a} x="${l}" y="${y}" width="${Math.max(w,it.val>0?2:0)}" height="${h}" rx="3" fill="${it.color}"><title>${esc(it.title||it.label)}</title></rect><text x="${l+w+6}" y="${y+h/2+4}" font-weight="600">${fmt(it.val)}</text>`});
+  $(id).innerHTML=`<svg${o.W?` class="big"`:""} viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria)}">${s}</svg>`;
+}
+function donut(rows,rem){
+  const tin=rows.reduce((a,r)=>a+r.cin,0),pct=tin>0?Math.max(0,rem/tin):0;
+  let parts=rows.filter(r=>r.bal>0).sort((a,b)=>b.bal-a.bal);
+  if(!parts.length){$("donut").innerHTML=`<div class="empty">No remaining stock.</div>`;return}
+  if(parts.length>8){const rest=parts.slice(8);parts=parts.slice(0,8).concat([{sku:"Other ("+rest.length+" SKUs)",bal:rest.reduce((a,r)=>a+r.bal,0),other:true}])}
+  const cx=300,cy=190,R=105,C=2*Math.PI*R,gap=parts.length>1?5:0;let off=0,seg="",lg="";
+  parts.forEach(r=>{const f=r.bal/rem,len=f*C,c=r.other?OTHERC:COL[r.sku],a=r.other?"":` class="clk" data-k="sku" data-v="${esc(r.sku)}"`;
+    seg+=`<circle${a} cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${c}" stroke-width="46" stroke-dasharray="${Math.max(len-gap,0.5)} ${C-len+gap}" stroke-dashoffset="${-(off+gap/2)}" transform="rotate(-90 ${cx} ${cy})"><title>${esc(r.sku)}: ${fmt(r.bal)} (${(f*100).toFixed(1)}%)</title></circle>`;
+    lg+=`<div${r.other?"":` data-k="sku" data-v="${esc(r.sku)}"`}><i style="background:${c}"></i>${esc(r.sku)}<span>${fmt(r.bal)} | ${(f*100).toFixed(1)}%</span></div>`;off+=len});
+  $("donut").innerHTML=`<svg viewBox="90 60 420 260" role="img" aria-label="Remaining stock share by SKU">${seg}<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="34" font-weight="700" style="font-size:34px">${(pct*100).toFixed(1)}%</text><text class="mut" x="${cx}" y="${cy+22}" text-anchor="middle">remaining of received</text></svg><div class="dl">${lg}</div>`;
+}
+function deliveredFlexo(win){
+  const o=win.filter(x=>x.type==="OUT");
+  if(!o.length){$("deliv").innerHTML=`<div class="empty">${DAILY?"No deliveries to Flexo yet today.":"No deliveries in this selection."}</div>`;$("delivleg").innerHTML="";return}
+  const fx=x=>x.fx||"—",ms=[...new Set(o.map(fx))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const bySku={};o.forEach(x=>bySku[x.sku]=(bySku[x.sku]||0)+x.q);
+  const top=Object.keys(bySku).sort((a,b)=>bySku[b]-bySku[a]).slice(0,8),grp=x=>top.includes(x.sku)?x.sku:"__other";
+  const sk=top.slice().sort().concat(Object.keys(bySku).length>top.length?["__other"]:[]);
+  const tot=ms.map(m=>o.filter(x=>fx(x)===m).reduce((a,x)=>a+x.q,0)),mx=nice(Math.max(...tot));
+  const W=560,rh=46,l=84,t=8,b=28,H=t+b+rh*ms.length,pw=W-l-56;let s="";
+  for(let i=0;i<=4;i++){const x=l+pw*i/4;s+=`<line x1="${x}" x2="${x}" y1="${t}" y2="${H-b}" stroke="var(--line)"/><text class="mut" x="${x}" y="${H-b+15}" text-anchor="middle">${kfmt(mx*i/4)}</text>`}
+  ms.forEach((m,i)=>{const y=t+rh*i+8,h=rh-16;let x=l;
+    s+=`<text class="clk" data-k="fx" data-v="${esc(m)}" x="${l-8}" y="${y+h/2+4}" text-anchor="end" font-weight="600">${esc(trunc(m,12))}</text>`;
+    sk.forEach(sku=>{const v=o.filter(z=>fx(z)===m&&grp(z)===sku).reduce((a,z)=>a+z.q,0);if(!v)return;const w=v/mx*pw,oth=sku==="__other";
+      s+=`<rect ${oth?"":`class="clk" data-k="sku" data-v="${esc(sku)}"`} x="${x}" y="${y}" width="${w}" height="${h}" fill="${oth?OTHERC:COL[sku]}"><title>${esc(m)} | ${oth?"Other SKUs":esc(sku)}: ${fmt(v)}</title></rect>`;x+=w});
+    s+=`<text x="${x+6}" y="${y+h/2+4}" font-weight="600">${fmt(tot[i])}</text>`});
+  $("deliv").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Quantity delivered per Flexo machine">${s}</svg>`;
+  $("delivleg").innerHTML=sk.map(x=>`<span><i style="background:${x==="__other"?OTHERC:COL[x]}"></i>${x==="__other"?"Other":esc(x)}</span>`).join("");
+}
+function remaining(rows){
+  const wide=innerWidth>900,all=[...rows].sort((a,b)=>b.bal-a.bal),r=all.slice(0,wide?20:12);
+  $("remnote").textContent=all.length>r.length?`Top ${r.length} of ${all.length}`:"";
+  hbar("rem",r.map(x=>({label:x.sku,sub:x.desc,val:Math.max(x.bal,0),color:`var(--s${st(x.bal)})`,attr:`data-k="sku" data-v="${esc(x.sku)}"`,title:`${x.sku} · ${x.desc}: ${fmt(x.bal)} (${SN[st(x.bal)]})`})),
+    {...(wide?{W:1200,l:400,rh:46}:{l:200,rh:36}),mx:nice(Math.max(15000*1.05,...r.map(x=>x.bal))),th:[[7500,"7,500"],[15000,"15,000"]],aria:"Remaining stock per SKU"});
+}
+function movement(win){
+  const key=x=>G==="d"?x.d:G==="w"?x.yr+"-W"+pad(x.wk):x.yr+"-"+pad(MON.indexOf(x.mon)+1);
+  const lbl=k=>G==="d"?fd(k).replace(/, \d{4}$/,""):G==="w"?"Wk "+(+k.slice(-2)):MON[+k.slice(5)-1].slice(0,3)+" "+k.slice(0,4);
+  const ks=[...new Set(win.map(key))].sort().slice(-14),n=ks.length;
+  const v=ks.map(k=>({i:win.filter(x=>key(x)===k&&x.type==="IN").reduce((a,x)=>a+x.q,0),o:win.filter(x=>key(x)===k&&x.type==="OUT").reduce((a,x)=>a+x.q,0)}));
+  const mx=nice(Math.max(1,...v.map(a=>Math.max(a.i,a.o)))),W=380,H=250,l=44,t=20,b=34,gw=(W-l-8)/n,gap=Math.max(3,Math.min(8,gw*.12)),bw=Math.min(30,(gw*.78-gap)/2),Y=q=>t+(H-t-b)*(1-q/mx),step=Math.ceil(n/5);
+  let s=axis(W,H,l,t,b,mx);
+  ks.forEach((k,i)=>{const cx=l+gw*(i+.5);
+    [[v[i].i,"var(--in)","In",-bw-gap/2],[v[i].o,"var(--out)","Out",gap/2]].forEach(([q,c,nm,dx])=>{if(!q)return;
+      s+=`<rect x="${cx+dx}" y="${Y(q)}" width="${bw}" height="${H-b-Y(q)}" rx="2" fill="${c}"><title>${lbl(k)} | ${nm}: ${fmt(q)}</title></rect>`;
+      if(n<=6)s+=`<text x="${cx+dx+bw/2}" y="${Y(q)-4}" text-anchor="middle" font-weight="600">${kfmt(q)}</text>`});
+    if(i%step===0)s+=`<text class="mut" x="${cx}" y="${H-b+16}" text-anchor="middle">${lbl(k)}</text>`});
+  $("move").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Stock in versus delivered over time">${s}</svg>`;
+}
+function timeCons(win){
+  if(!win.length){$("tavg").textContent="";$("tcons").innerHTML=`<div class="empty">${DAILY?"No activity yet today.":"No activity in this selection."}</div>`;return}
+  const g={};
+  win.forEach(x=>{const k=x.sku+"|"+x.d,r=g[k]=g[k]||{sku:x.sku,desc:x.desc,d:x.d,i:null,o:null};if(x.type==="IN"&&!r.i)r.i=x.t;if(x.type==="OUT")r.o=x.t});
+  const rs=Object.values(g).sort((a,b)=>a.d===b.d?(a.sku<b.sku?-1:1):(a.d<b.d?1:-1)).map(r=>({...r,m:r.i&&r.o&&tsec(r.o)>=tsec(r.i)?Math.round((tsec(r.o)-tsec(r.i))/60):null}));
+  const ok=rs.filter(r=>r.m!==null),mx=Math.max(1,...ok.map(r=>r.m)),avg=ok.length?Math.round(ok.reduce((a,r)=>a+r.m,0)/ok.length):null;
+  $("tavg").textContent=avg!==null?"Average: "+dur(avg):"";
+  $("tcons").innerHTML=`<table><tr><th>Date</th><th>SKU</th><th class="l">Description</th><th>First in (Corrugator)</th><th>Last out (Flexo)</th><th>Time consumed</th><th class="l" style="width:25%"></th></tr>${rs.map(r=>`<tr><td>${fd(r.d)}</td><td>${esc(r.sku)}</td><td class="l">${esc(r.desc)}</td><td>${r.i?ft(r.i):"—"}</td><td>${r.o?ft(r.o):"—"}</td><td>${r.m!==null?"<b>"+dur(r.m)+"</b>":r.o?(r.i?"Delivery before stock in":"No stock in that day"):"Not delivered yet"}</td><td class="l">${r.m!==null?`<div style="background:var(--brand2);height:10px;border-radius:5px;width:${r.m/mx*100}%;min-width:3px"></div>`:""}</td></tr>`).join("")}</table>`;
+}
+/* ======================= EXCEL PARSING ======================= */
+function parseWorkbook(buf){
+  if(typeof XLSX==="undefined")throw new Error("Excel reader could not load. Check your connection.");
+  const wb=XLSX.read(buf,{type:"array"}),norm=s=>String(s).trim().toUpperCase().replace(/\s+/g," ");
+  const sheet=n=>{const k=wb.SheetNames.find(x=>norm(x)===n);return k?wb.Sheets[k]:null};
+  const rowsOf=(n,req)=>{const w=sheet(n);if(!w){if(req)throw new Error('Sheet "'+n+'" was not found in the workbook.');return[]}
+    return XLSX.utils.sheet_to_json(w,{raw:true,defval:""}).map(r=>{const o={};for(const k in r)o[norm(k)]=r[k];return o})};
+  const g=(r,...ns)=>{for(const n of ns)if(r[n]!==undefined&&r[n]!=="")return r[n];return""};
+  const tparse=t=>{if(typeof t==="number")return Math.round((t-Math.floor(t))*86400);const m=String(t).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);if(!m)return null;let h=+m[1];if(m[4]){h=h%12+(/pm/i.test(m[4])?12:0)}return h*3600+ +m[2]*60+(+m[3]||0)};
+  const when=(d,t)=>{
+    let days,sec;
+    if(typeof d==="number"){days=Math.floor(d);sec=t!==""&&tparse(t)!==null?tparse(t):Math.round((d-days)*86400)}
+    else if(d instanceof Date&&!isNaN(d)){days=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)+25569;sec=d.getHours()*3600+d.getMinutes()*60+d.getSeconds()}
+    else{const p=new Date(String(d));if(!String(d).trim()||isNaN(p))return null;days=Math.floor(Date.UTC(p.getFullYear(),p.getMonth(),p.getDate())/864e5)+25569;sec=t!==""&&tparse(t)!==null?tparse(t):p.getHours()*3600+p.getMinutes()*60+p.getSeconds()}
+    const total=(days-25569)*86400+sec,i=new Date(total*1000).toISOString();return[i.slice(0,10),i.slice(11,19)]};
+  const isoWeek=d=>{const x=new Date(d+"T00:00:00Z"),n=(x.getUTCDay()+6)%7;x.setUTCDate(x.getUTCDate()-n+3);const f=new Date(Date.UTC(x.getUTCFullYear(),0,4));return 1+Math.round(((x-f)/864e5-3+((f.getUTCDay()+6)%7))/7)};
+  const tx=(name,isOut)=>rowsOf(name,true).map(r=>{
+    const sku=String(g(r,"SKU/ITEM CODE","SKU")).trim(),q=+g(r,"QUANTITY","QUANTITY OUT","QUANTITY IN"),w=when(g(r,"DATE/TIME","DATE"),g(r,isOut?"TIME OUT":"TIME IN","TIME"));
+    if(!sku||!w||!q||isNaN(q))return null;const wk=+g(r,"WEEK NO.","WEEK NO","WEEK");
+    return{id:+g(r,"ENTRY ID")||0,wk:wk||isoWeek(w[0]),d:w[0],t:w[1],shift:String(g(r,"SHIFT")).trim(),q,sku,desc:String(g(r,"DESCRIPTION")).trim(),cust:String(g(r,"CUSTOMER")).trim(),fx:isOut?String(g(r,"DELIVERED TO")).trim():""}}).filter(Boolean);
+  const ins=tx("INVENTORY IN",false),outs=tx("INVENTORY OUT",true);
+  const sku=rowsOf("CORRUGATED SKU",false).map(r=>{const o={sku:String(g(r,"SKU","SKU/ITEM CODE")).trim(),desc:String(g(r,"DESCRIPTION")).trim(),cust:String(g(r,"CUSTOMER")).trim()};
+    const b=String(g(r,"BOX TYPE")).trim(),c=String(g(r,"BOX CAPACITY")).trim();if(b)o.box=b;if(c)o.cap=c;return o}).filter(s=>s.sku);
+  return{ins,outs,sku};
+}
+
+/* ======================= ONEDRIVE SYNC ======================= */
+const SK="cbim.cfg.v2",store={get(){try{return JSON.parse(localStorage.getItem(SK)||"{}")}catch(e){return{}}},set(o){try{localStorage.setItem(SK,JSON.stringify(o))}catch(e){}}};
+let CFG={};
+(function(){const s=store.get();CFG={url:CONFIG.SCRIPT_URL||s.url||"",interval:s.interval!=null?+s.interval:CONFIG.REFRESH_SEC}})();
+const configured=()=>!!CFG.url;
+async function gget(sheet){
+  const u=new URL(CFG.url);u.searchParams.set("sheet",sheet);u.searchParams.set("_",Date.now());
+  const r=await fetch(u,{cache:"no-store"});
+  if(!r.ok)throw new Error("Google returned error "+r.status+".");
+  let d;try{d=await r.json()}catch(e){throw new Error('The web app did not return data. Deploy it with access set to "Anyone" and use the URL ending in /exec.')}
+  if(!d.ok)throw new Error(d.error||"Unknown error from Google Sheets.");
+  return d;
+}
+let SYNCING=false,LASTTAG="",LASTHASH="",LIVE=false,SY={s:"demo",at:null,err:"",src:""},TIMER=null;
+async function sync(force,interactive){
+  if(SYNCING)return;
+  if(!configured()){paint();return}
+  SYNCING=true;SY.s="busy";paint();
+  try{
+    // cheap check first; the full data is only downloaded when the sheet changed (and at least every 5 minutes, to catch edits to old rows)
+    const tag=(await gget("VERSION")).tag+"|"+Math.floor(Date.now()/3e5);
+    if(!force&&LIVE&&tag===LASTTAG){SY.s="ok";SY.at=new Date();SY.err="";paint();return}
+    const d=await gget("DASHBOARD");
+    LASTTAG=tag;apply(d,"Google Sheets");
+    SY.s="ok";SY.at=new Date();SY.err="";LIVE=true;
+  }catch(e){
+    SY.s="err";SY.err=e instanceof TypeError?"Could not reach Google Sheets (no internet, or the web app is not shared with “Anyone”).":(e&&e.message)||"Unknown error";
+  }finally{SYNCING=false;paint()}
+}
+function apply(d,src){
+  const h=JSON.stringify(d),first=LASTHASH==="";
+  if(h===LASTHASH)return;
+  const old=window.__n||[0,0];LASTHASH=h;window.__n=[d.ins.length,d.outs.length];
+  build(d,true);
+  if(!first&&LIVE){const a=d.ins.length-old[0],b=d.outs.length-old[1];msg("Workbook updated"+(a||b?": "+(a>0?"+"+a+" stock in":"")+(a>0&&b>0?", ":"")+(b>0?"+"+b+" delivered":""):""))}
+}
+function ago(t){const s=Math.round((Date.now()-t)/1000);return s<10?"just now":s<60?s+"s ago":Math.round(s/60)+" min ago"}
+function paint(){
+  const p=$("sync"),t=$("synctxt"),b=$("banner");p.dataset.s=SY.s;
+  const live=configured();
+  t.textContent=SY.s==="busy"?"Syncing…":SY.s==="err"?"Sync problem · showing "+(LIVE?"last synced data":"snapshot"):SY.s==="ok"?"Live · synced "+ago(SY.at):SY.src==="file"?"Loaded from file":live?"Connecting…":"Snapshot · not connected";
+  p.title=SY.s==="err"?SY.err:live?"Source: Google Sheets"+(CFG.interval?" · checks every "+(CFG.interval>=60?CFG.interval/60+" min":CFG.interval+" s"):" · manual refresh"):"Showing the data embedded in this file";
+  $("syncnow").hidden=!live;
+  if(SY.s==="err"){b.hidden=false;b.className="banner err";b.innerHTML=`<span><b>Could not sync with Google Sheets.</b> ${esc(SY.err)}</span><span class="sp"></span><button class="btn" id="b_retry">Retry</button><button class="btn" id="b_cfg">Data source</button>`}
+  else if(!live&&SY.src!=="file"){b.hidden=false;b.className="banner";b.innerHTML=`<span><b>Showing a snapshot of the workbook.</b> Connect your Google Sheet to keep this dashboard up to date automatically.</span><span class="sp"></span><button class="btn pri" id="b_cfg">Connect Google Sheets</button>`}
+  else b.hidden=true;
+}
+function schedule(){
+  clearInterval(TIMER);
+  if(CFG.interval>0&&configured())TIMER=setInterval(()=>{if(!document.hidden)sync(false,false)},Math.max(10,CFG.interval)*1000);
+}
+setInterval(()=>{if(SY.s==="ok"&&SY.at)paint()},5000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&configured())sync(false,false)});
+addEventListener("online",()=>{if(configured())sync(true,false)});
+
+/* ======================= CONTROLS ======================= */
+const msg=t=>{const m=$("msg");m.textContent=t;m.style.display="block";clearTimeout(msg.t);msg.t=setTimeout(()=>m.style.display="none",4500)};
+let QT=null;
+$("filters").addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;F[k]=e.target.value;if(k==="q"){clearTimeout(QT);QT=setTimeout(render,180)}else render()});
+document.addEventListener("click",e=>{
+  const c=e.target.closest("[data-clear]");if(c){F[c.dataset.clear]="";render();return}
+  const el=e.target.closest("[data-v]");if(el&&el.dataset.k){const k=el.dataset.k,v=el.dataset.v;F[k]=(v===""||F[k]===v)?"":v;render();return}
+  if(e.target.id==="b_retry")sync(true,true);
+  if(e.target.id==="b_cfg")openCfg();
+});
+document.querySelectorAll("#grp button").forEach(b=>b.onclick=()=>{G=b.dataset.g;document.querySelectorAll("#grp button").forEach(x=>x.classList.toggle("on",x===b));if(LASTWIN.length)movement(LASTWIN)});
+$("reset").onclick=()=>{F={...BLANK};render()};
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":matchMedia("(prefers-color-scheme:dark)").matches};
+const setT=t=>{document.documentElement.dataset.theme=t;$("theme").textContent=t==="dark"?"Light mode":"Dark mode"};
+if(!document.documentElement.dataset.theme)document.documentElement.dataset.theme="dark";$("theme").textContent=isDark()?"Light mode":"Dark mode";$("theme").onclick=()=>setT(isDark()?"light":"dark");
+$("syncnow").onclick=()=>sync(true,true);
+$("csv").onclick=()=>{
+  const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"',h=["Date","Time","Entry ID","Shift","SKU","Description","Customer","Movement","Delivered to","Quantity","Previous balance","Remaining balance"];
+  const body=LASTWIN.slice().reverse().map(x=>[x.d,x.t,x.id,x.shift,x.sku,x.desc,x.cust,x.type,x.fx,x.q,Math.max(x.prev,0),x.bal].map(q).join(","));
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+[h.map(q).join(",")].concat(body).join("\r\n")],{type:"text/csv"}));a.download="inventory_movement.csv";document.body.appendChild(a);a.click();a.remove();
+};
+// Data source dialog
+function openCfg(){$("c_url").value=CFG.url;$("c_int").value=String(CFG.interval);if(!$("dlg").open)$("dlg").showModal()}
+$("cfg").onclick=openCfg;
+$("c_save").onclick=()=>{
+  const u=$("c_url").value.trim();
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){msg("Paste the Web App URL: it starts with https://script.google.com/ and ends with /exec.");return}
+  CFG={url:u,interval:+$("c_int").value};
+  store.set(CFG);LASTTAG="";LIVE=false;LASTHASH="";SY.src="";$("dlg").close();schedule();sync(true,true);
+};
+$("c_file").onclick=()=>$("file").click();
+$("file").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=parseWorkbook(await f.arrayBuffer());if(!d.ins.length&&!d.outs.length)throw new Error("No transactions found in INVENTORY IN / INVENTORY OUT.");
+    LASTHASH="";apply(d,"file");SY.src="file";SY.s="demo";LIVE=false;paint();$("dlg").close();msg("Loaded "+d.ins.length+" stock-in and "+d.outs.length+" stock-out entries from file.")}
+  catch(err){msg(err.message||"Could not read that file.")}
+  e.target.value="";
+};
+
+/* ======================= AI ASSISTANT (available when the host page grants it) ======================= */
+let SM=null,HIST=[],BUSY=false;
+const SYS="You are the inventory assistant for a corrugated board dashboard (Corrugator to Flexo transfer car). Stock status rules: Out of Stock = 0, Low <= 7,500, Medium <= 15,000, High > 15,000. Balances carry forward per SKU across days and never go below 0. Answer briefly in plain text, using only the data below; if the data does not contain the answer, say so. Current dashboard data (JSON): ";
+const addMsg=(role,text)=>{const d=document.createElement("div");d.className="m "+role;d.textContent=text;$("botlog").appendChild(d);$("botlog").scrollTop=1e9;return d};
+async function ask(q){
+  q=q.trim();if(!SM||BUSY||!q)return;
+  if(!CTX){addMsg("me",q);addMsg("bot","No transactions match the current filters.");return}
+  BUSY=true;addMsg("me",q);const b=addMsg("bot","Thinking…");
+  if(HIST.length>10)HIST.splice(0,2);
+  HIST.push({role:"user",content:q});
+  const msgs=HIST.map((m,i)=>i===0?{role:"user",content:SYS+JSON.stringify(CTX)+"\n\nQuestion: "+m.content}:m);
+  try{const r=await SM(msgs,{cache:false,onText:({text})=>{b.textContent=text;$("botlog").scrollTop=1e9}});b.textContent=r.text;HIST.push({role:"assistant",content:r.text})}
+  catch(e){HIST.pop();b.textContent=e&&e.code==="not_granted"?"AI access was declined for this page.":e&&e.code==="rate_limited"?"Too many requests. Wait a moment, then try again.":"The assistant could not answer. Try again."}
+  BUSY=false}
+const bot=o=>{$("botp").hidden=!o;$("botfab").hidden=o||!SM;if(o)$("botin").focus()};
+$("botfab").onclick=()=>bot(true);$("botx").onclick=()=>bot(false);
+const send=()=>{const v=$("botin").value;$("botin").value="";ask(v)};
+$("botgo").onclick=send;$("botin").onkeydown=e=>{if(e.key==="Enter")send()};
+$("botchips").innerHTML=["Which SKUs are low on stock?","What was delivered to each Flexo machine?","Summarize this view"].map(t=>`<button>${t}</button>`).join("");
+$("botchips").onclick=e=>{if(e.target.tagName==="BUTTON")ask(e.target.textContent)};
+if(window.claude&&claude.use)claude.use("sample").then(s=>{if(s){SM=s;$("botfab").hidden=!$("botp").hidden}}).catch(()=>{});
+
+let WB=innerWidth>900;addEventListener("resize",()=>{const w=innerWidth>900;if(w!==WB){WB=w;render()}});
+/* ======================= START ======================= */
+build(DEMO,false);
+paint();schedule();
+if(configured())sync(true,false);
+</script>
+</body>
+</html>
