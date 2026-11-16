@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPD BOX PLANT TRANSFER CAR INVENTORY SYSTEM</title>
+<style>
+    :root { color-scheme: light; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #171717; background: #f7f7f8; --blue: #002fa7; --line: #d8d8dc; --soft: #e4e4e7; --muted: #66666f; --ok: #0b6b3a; --bad: #a11212; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { background: #fff; border-bottom: 1px solid var(--line); }
+    .topbar-inner, main { max-width: 1440px; margin: auto; padding-left: 5%; padding-right: 5%; }
+    .topbar-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { font-size: 15px; font-weight: 800; letter-spacing: -.03em; }
+    .brand span { display: inline-block; width: 10px; height: 10px; margin-right: 10px; background: var(--blue); }
+    .top-note { font-size: 12px; color: var(--muted); } .top-note a { color: var(--blue); text-decoration: none; font-weight: 700; } .top-note a:hover { text-decoration: underline; }
+    main { padding-top: 44px; padding-bottom: 80px; }
+    .heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+    .eyebrow { color: var(--blue); font-size: clamp(40px, 6vw, 72px); font-weight: 800; text-transform: uppercase; letter-spacing: -.02em; line-height: 1; }
+    h1 { font-size: clamp(26px, 3.6vw, 46px); line-height: 1.05; letter-spacing: -.045em; margin: 12px 0; max-width: 900px; }
+    .intro { color: #5e5e67; font-size: 15px; margin: 0; line-height: 1.5; }
+    .stats { display: flex; gap: 28px; }
+    .stat { border-left: 2px solid var(--blue); padding-left: 16px; min-width: 110px; }
+    .stat strong { display: block; font-size: 32px; letter-spacing: -.05em; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .banner { display: none; margin: 0 0 20px; padding: 14px 18px; font-size: 14px; line-height: 1.5; border: 1px solid; border-left-width: 4px; background: #fff; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .banner.show { display: flex; }
+    .banner.ok { color: var(--ok); border-color: var(--ok); background: #f1faf5; }
+    .banner.bad { color: var(--bad); border-color: var(--bad); background: #fdf3f3; }
+    .banner.info { color: var(--blue); border-color: var(--blue); background: #f3f6ff; }
+    .banner button { border: 0; background: none; color: inherit; font-size: 20px; line-height: 1; padding: 0 2px; }
+    .banner .extra { margin-top: 8px; }
+    .panel { background: #fff; border: 1px solid var(--line); margin-bottom: 24px; }
+    .panel-heading { padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    h2 { font-size: 18px; letter-spacing: -.03em; margin: 0; }
+    .panel-heading p { margin: 4px 0 0; color: #707079; font-size: 12px; }
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 0; margin: 0; padding: 0; min-width: 0; }
+    .field { padding: 18px 28px 20px; border-right: 1px solid var(--soft); border-bottom: 1px solid var(--soft); min-width: 0; }
+    .field.span2 { grid-column: span 2; }
+    .field.last { border-right: 0; }
+    label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 9px; }
+    input, select { width: 100%; height: 43px; border: 1px solid #cfcfd5; border-radius: 0; padding: 0 11px; background: #fff; color: #171717; }
+    input:focus, select:focus, .button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+    input[readonly] { background: #f7f7f8; color: #4a4a52; }
+    input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--bad); background: #fffafa; }
+    .field small { display: block; color: #777780; margin-top: 7px; font-size: 11px; min-height: 14px; }
+    .field .err { color: var(--bad); font-weight: 600; }
+    fieldset[disabled] { opacity: .55; }
+    .actions { padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; max-width: 620px; }
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    .button { min-height: 43px; padding: 0 18px; border: 1px solid #bcbcc4; background: #fff; color: #171717; font-weight: 700; font-size: 13px; }
+    .button-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .button:hover:not(:disabled) { filter: brightness(.94); }
+    .button:disabled { cursor: not-allowed; opacity: .45; }
+    .button[hidden] { display: none; }
+    .search { width: 240px; }
+    .tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
+    th, td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--soft); }
+    td.num, th.num { text-align: right; }
+    th { color: #64646c; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; background: #f7f7f8; position: sticky; top: 0; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tr.fresh td { background: #f1faf5; }
+    .empty { padding: 36px 28px; color: #707079; font-size: 14px; }
+    .more { padding: 16px 28px; border-top: 1px solid var(--soft); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); gap: 12px; flex-wrap: wrap; }
+    .file-line { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b0b0b8; margin-right: 6px; }
+    .dot.on { background: #1a9a57; }
+    @media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .field { border-right: 0; } }
+    @media (max-width: 560px) { main { padding-top: 32px; } .topbar-inner { flex-direction: column; align-items: flex-start; padding-top: 10px; padding-bottom: 10px; gap: 6px; } .form-grid { grid-template-columns: 1fr; } .field, .field.span2 { grid-column: auto; border-right: 0 !important; padding: 16px 20px; } .panel-heading, .actions, .more { padding: 18px 20px; } .search { width: 100%; } .stats { gap: 18px; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand"><span></span>TPD BOX PLANT TRANSFER CAR INVENTORY SYSTEM</div>
+        <nav class="top-note"><a href="corrugated_inventory_dashboard.html">Dashboard</a> &middot; <a href="Inventory_In.html">Inventory In</a> &middot; <a href="Inventory_Out.html">Inventory Out</a> &middot; <span id="gs-user"></span></nav>
+    </div>
+</header>
+
+<main>
+    <div class="heading">
+        <div>
+            <div class="eyebrow">Inventory in</div>
+            <h1>TPD BOX PLANT TRANSFER CAR INVENTORY SYSTEM</h1>
+            <p class="intro">Record incoming stock. Each submission is added as a new row on the INVENTORY IN sheet.</p>
+        </div>
+        <div class="stats">
+            <div class="stat"><strong id="stat-count">0</strong><span>Records</span></div>
+            <div class="stat"><strong id="stat-qty">0</strong><span>Total quantity</span></div>
+        </div>
+    </div>
+
+    <div id="banner" class="banner" role="status" aria-live="polite"><div><div id="banner-text"></div><div class="extra" id="banner-extra"></div></div><button type="button" id="banner-close" aria-label="Dismiss message">&times;</button></div>
+
+    <section class="panel" aria-labelledby="wb-title">
+        <div class="panel-heading">
+            <div><h2 id="wb-title">Google Sheets connection</h2><p class="file-line"><span class="dot" id="wb-dot"></span><span id="wb-name">Connecting...</span></p></div>
+            <div class="tools"><button class="button" id="btn-refresh" type="button">Sync now</button></div>
+        </div>
+    </section>
+
+    <section class="panel" aria-labelledby="form-title">
+        <div class="panel-heading"><div><h2 id="form-title">New inventory-in transaction</h2><p>Fields marked * are required. Date, time, week and entry ID are filled in automatically.</p></div></div>
+        <form id="in-form" novalidate autocomplete="off">
+            <fieldset class="form-grid" id="form-fields" disabled>
+                <div class="field"><label for="f-id">Entry ID</label><input id="f-id" readonly><small>Next number in the sheet</small></div>
+                <div class="field"><label for="f-week">Week no.</label><input id="f-week" readonly><small>Monday&ndash;Sunday weeks</small></div>
+                <div class="field"><label for="f-datetime">Date / time</label><input id="f-datetime" readonly><small>Recorded when you submit</small></div>
+                <div class="field last"><label for="f-time">Time in</label><input id="f-time" readonly><small>&nbsp;</small></div>
+
+                <div class="field span2"><label for="f-sku">SKU / Item code *</label><input id="f-sku" list="sku-list" placeholder="Select or type a SKU" aria-describedby="e-sku" spellcheck="false"><datalist id="sku-list"></datalist><small id="h-bal" style="color:#0b6b3a;font-weight:600"></small><small id="e-sku" class="err"></small></div>
+                <div class="field"><label for="f-qty">Quantity *</label><input id="f-qty" type="number" inputmode="numeric" min="1" step="1" placeholder="Whole number" aria-describedby="e-qty"><small id="e-qty" class="err"></small></div>
+                <div class="field last"><label for="f-shift">Shift *</label><select id="f-shift" aria-describedby="e-shift"></select><small id="e-shift" class="err"></small></div>
+
+                <div class="field span2"><label for="f-desc">Description</label><input id="f-desc" readonly placeholder="Filled in from the SKU"><small>From the CORRUGATED SKU sheet</small></div>
+                <div class="field span2 last"><label for="f-cust">Customer</label><input id="f-cust" readonly placeholder="Filled in from the SKU"><small>From the CORRUGATED SKU sheet</small></div>
+            </fieldset>
+            <div class="actions">
+                <p class="hint" id="save-hint">Connecting to Google Sheets...</p>
+                <div class="buttons">
+                    <button class="button" type="button" id="btn-cancel" hidden>Cancel edit</button>
+                    <button class="button" type="button" id="btn-clear" disabled>Clear</button>
+                    <button class="button button-primary" type="submit" id="btn-submit" disabled>Submit transaction</button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" aria-labelledby="hist-title">
+        <div class="panel-heading">
+            <div><h2 id="hist-title">Transaction history</h2><p id="hist-sub">Newest first</p></div>
+            <div class="tools">
+                <input class="search" id="search" type="search" placeholder="Search SKU, description, customer..." aria-label="Search history" disabled>
+                <button class="button" id="btn-export" type="button" disabled>Export CSV</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th class="num">Entry ID</th><th class="num">Week no.</th><th>Date / time</th><th>Time in</th><th>Shift</th><th class="num">Quantity</th><th>SKU / Item code</th><th>Description</th><th>Customer</th><th>Actions</th></tr></thead>
+                <tbody id="hist-body"></tbody>
+            </table>
+        </div>
+        <div class="empty" id="hist-empty">Loading records from Google Sheets...</div>
+        <div class="more" id="hist-more" hidden><span id="hist-count"></span><button class="button" id="btn-more" type="button">Show 50 more</button></div>
+    </section>
+</main>
+
+<script src="config.js"></script>
+<script src="gs-client.js"></script>
+<script src="inv-page.js"></script>
+<script>InvPage("in");</script>
+</body>
+</html>
